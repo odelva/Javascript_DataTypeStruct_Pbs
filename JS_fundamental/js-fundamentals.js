@@ -321,13 +321,14 @@ function pluck(array, key) {
 	return value;
 }
 
+
 /**
  * remove leading and trailing whitespace or specified characters from string
  * trim(' hello '); -> 'hello'
  * trim('   hello world '); -> 'hello world'
  */
 function trim(string) {
-
+	return string.replace(/^\s+|\s+$/gm,'');
 }
 
 // Reduces collection to a value which is the accumulated result of running each element in collection through iteratee, where each successive invocation is supplied the return value of the previous. If accumulator is not provided the first element of collection is used as the initial value.
@@ -339,18 +340,64 @@ function trim(string) {
 //  return stored + current;
 // },1); → 4
 function reduce(array, callback, start) {
+	var tally;
+    if(start) {
+        tally = start;
+        for (var i = 0; i < array.length; i++) {
+            tally = callback(tally, array[i]);
+        }
+    }
+    else{
+        tally=array[0];
+        for (var i=1; i<array.length; i++){
+            tally=callback(tally,array[i]);
+    }
 
+
+    }
+    return tally;
 }
 
 // Flattens a nested array.
 // flatten([1, [2, 3, [4]]]); → [1, 2, 3, [4]]
 function flatten(array) {
-
+	var new_arr=[];
+	for (var i=0; i<array.length; i++){
+		if (array[i].constructor===Array){
+			for (var x=0; x<array[i].length; x++){
+				new_arr.push(array[i][x]);
+			}
+		}
+		else{
+			new_arr.push(array[i]);
+		}
+	}
+	return new_arr;
 }
 
 // Recursively flattens a nested array.
 // flattenDeep([1, [2, 3, [4]]]); → [1, 2, 3, 4]
 function flattenDeep(array) {
+	 var new_arr=[];
+    var counter=0;
+    for (var i=0; i<array.length; i++){
+        if (array[i].constructor===Array){
+            for (var x=0; x<array[i].length; x++){
+                new_arr.push(array[i][x]);
+                counter+=1;
+            }
+        }
+        else{
+            new_arr.push(array[i]);
+        }
+    }
+    if (counter==0){
+        return new_arr;
+    }
+    else{
+        return flattenDeep(new_arr);
+    }
+
 
 }
 
@@ -358,6 +405,15 @@ function flattenDeep(array) {
 // extend({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' }); → { 'user': 'fred', 'age': 40 }
 // BONUS: solve with reduce
 function extend() {
+	for (var i=1; i<arguments.length; i++){
+    for (var attrib in arguments[i]){
+
+            arguments[0][attrib]=arguments[i][attrib];
+
+       }
+
+    }
+    return arguments[0];
 
 }
 
@@ -365,6 +421,10 @@ function extend() {
 // isString('hi'); → true
 // isString(5); → false
 function isString(value) {
+	if (typeof value==='string'){
+		return true;
+	}
+	return false;
 
 }
 
@@ -375,7 +435,8 @@ function isString(value) {
 // deepClone[0] === users[0] → false 
 // deepClone[0].user === users[0].user → true
 function cloneDeep(value) {
-
+	var copy = JSON.parse(JSON.stringify(value)); 
+	return copy;
 }
 
 // Using a for loop, call the functions in the queue in order with the input number, where the results of each function become the next function’s input. Additionally, the queue should be empty after the function is called.
