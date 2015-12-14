@@ -98,8 +98,8 @@ function clone(value) {
 	if (value.constructor===Array){
 		var new_arr=[];
 		for(var i=0; i<value.length; i++){
-			var element=value[i];
-			new_arr.push(element);
+			new_arr[i]=value[i];
+			
 		}
 		return new_arr;
 	}
@@ -321,7 +321,6 @@ function pluck(array, key) {
 	return value;
 }
 
-
 /**
  * remove leading and trailing whitespace or specified characters from string
  * trim(' hello '); -> 'hello'
@@ -450,26 +449,58 @@ var start = 2;
 applyAndEmpty(2, puzzlers); → 3
 */
 function applyAndEmpty(input, queue) {
+	for (var i=0; i<queue.length; i++){
+		input=queue[i](input);
+	}
+	return input;
 
 }
 
 // Returns a function that is restricted to invoking func once. Repeat calls to the function return the value of the first call.
 function once(func) {
 
+	var called=false;
+	return function(){
+		if(!called){
+			func();
+			called=true;
+		}
+	}
+
 }
 
 // Returns a function that when called, will check if it has already computed the result for the given argument and return that value instead if possible.
 function memoize(func) {
-  
+	 var memo = {};
+
+    var slice = Array.prototype.slice;
+    
+ 
+    return function() {
+
+    var args = slice.call(arguments);
+    if (args in memo)
+            return memo[args];
+        else
+            return (memo[args]=func.apply(this, args));
+
+    }
 }
 
 // Invokes func after wait milliseconds. Any additional arguments are provided to func when it is invoked.
 function delay(func, wait, third) {
+	var myargs = Array.prototype.slice.call(arguments,2);
+
+
+    setTimeout(func,wait,myargs[0],myargs[1]);
+
 
 }
 
 // Returns a function that only invokes func once per every wait milliseconds (additional calls to func within the wait should not be invoked).
 function throttle(func, wait) {
+	
+	setInterval(func,wait);
 
 }
 
@@ -488,8 +519,76 @@ var users = [
 ];
 pluck(sortBy(users, 'user'), 'user'); → ['barney', 'fred', 'pebbles']
  */
+ //http://www.sitepoint.com/sophisticated-sorting-in-javascript/--->consult this website for sorting strategies
 function sortBy(array, iterator) {
+	
+	if (typeof array[0] !== "object") {
+		function compare(a,b) {
+        
+        	return a[0]-b[0];
+    	}
+        var new_arr = [];
+        for (var i = 0; i < array.length; i++) {
+            var new_subarr = [];
+            if(array[i]===undefined){
+                new_subarr.push(10000,array[i]);
 
+            }
+            else {
+                new_subarr.push(iterator(array[i]),array[i]);
+
+            }
+            new_arr.push(new_subarr);
+        }
+        
+        new_arr.sort(compare);
+       
+        var result = [];
+        for (var i = 0; i < new_arr.length; i++) {
+            result.push(new_arr[i][1]);
+        }
+        
+        return result;
+
+    }
+    else{
+    	function compare(a,b) {
+   			 if(a[0]!==undefined && b[0]!==undefined){
+        		return a[0]-b[0];
+    		}
+    		else{
+        		if(a[0]===undefined && b[0]===undefined)
+            		return 0;
+        	else if (a[0]!==undefined && b[0]===undefined)
+           		 return -1;
+        	else
+            	return 1;
+   		 }
+	}
+    	var new_arr=[];
+    	for (var i = 0; i < array.length; i++) {
+    		var new_subarr = [];
+    		if(iterator(array[i])===undefined){
+                new_subarr.push(undefined,array[i]);
+
+            }
+            else {
+                new_subarr.push(iterator(array[i]),array[i]);
+
+            }
+    		new_arr.push(new_subarr);
+    	
+    	}
+    	new_arr.sort(compare);
+    	var result = [];
+        for (var i = 0; i < new_arr.length; i++) {
+            result.push(new_arr[i][1]);
+        }
+        
+        return result;
+
+
+    }
 }
 
 /**
@@ -502,6 +601,22 @@ function sortBy(array, iterator) {
  * range(0,-10,-1); -> [0,-1,-2,-3,-4,-5,-6,-7,-8,-9]
  */
 function range(start, stop, step) {
+	if (arguments.length===1){
+		stop=arguments[0];
+		step=1;
+		start=0;
+	}
+	else if (arguments.length===2){
+		start=arguments[0];
+		stop=arguments[1];
+		step=1;
+	}
+	var new_arr=[];
+	for(var i=start; i<stop; i+=step){
+		new_arr.push(i);
+	}
+
+	return new_arr;
 
 }
 
@@ -512,19 +627,54 @@ function range(start, stop, step) {
  * }); -> [[0,2,4,6],[1,3,5]];
  */
 function partition(array, predicate) {
+	var part_true=[];
+	var part_false=[];
+	for (var i=0; i<array.length; i++){
+		if(predicate(array[i])){
+			part_true.push(array[i]);
+		}
+		else{
+			part_false.push(array[i]);
+		}
+	}
+	var result=[];
+	result.push(part_true,part_false);
 
+	return result;
 }
 
 // Receives a variable number of arrays, and returns an array that contains every item shared between all passed-in arrays
 // intersection([1, 2, 3], [101, 2, 1, 10], [2, 1]); -> [1,2]
 function intersection() {
-
+	var result=[];
+	
+	for (var i=0; i<arguments[0].length; i++){
+		var counter=0;
+		for (var j=1; j<arguments.length; j++){
+			if (arguments[j].indexOf(arguments[0][i])> -1){
+				counter++;
+			}
+		}
+		if (counter===arguments.length-1){
+			result.push(arguments[0][i]);
+		}
+	}
+	return result;
 }
 
 // Returns an array of grouped elements, the first of which contains the first elements of the given arrays, the second of which contains the second elements of the given arrays, and so on.
 // zip(['fred', 'barney'], [30, 40], [true, false]); → [['fred', 30, true], ['barney', 40, false]]
 function zip() {
+	var result=[];
+	for (var i=0; i<arguments[0].length; i++){
+		var new_arr=[arguments[0][i]];
 
+		for (var j=1; j<arguments.length; j++){
+			new_arr.push(arguments[j][i]);
+		}
+		result.push(new_arr);
+	}
+	return result;
 }
 
 // returns a function that will only be run after first being called count times
