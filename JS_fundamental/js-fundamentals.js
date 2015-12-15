@@ -684,6 +684,14 @@ function zip() {
 // afterCalled(); -> nothing is printed
 // afterCalled(); -> 'hello is printed'
 function after(count, func) {
+	var counter=0;
+	return function(){
+		counter++;
+		if(counter>=count){
+			return func();
+		}
+		
+	}
 
 }
 
@@ -698,7 +706,23 @@ function after(count, func) {
  * beforePrintAndIncrementCount(); prints 1
  */
 function before(count, func) {
+	var counter=0;
+	var memo={};
+	return function(){
+		counter++;
+		if(counter<count){
+			return func();
+		}
+		else if(counter===count){
+			memo['0']=func();
+			return memo['0'];
 
+		}
+		else{
+			return memo['0'];
+		}
+
+	}
 }
 
 // Write a function that creates arrays. The first argument is the length. The second
